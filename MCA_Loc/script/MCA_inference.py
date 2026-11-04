@@ -21,7 +21,7 @@ torch.cuda.manual_seed_all(seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-node_input_dim = MCALoc_config['node_input_dim']
+input_dim = MCALoc_config['input_dim']
 hidden_dim = MCALoc_config['hidden_dim']
 layer = MCALoc_config['layer']
 dropout = MCALoc_config['dropout']
@@ -85,7 +85,7 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, drop_
 fold_models = []
 for fold in range(5):
     state_dict = torch.load(f'../model/LA_CrossCL_fold{fold+1}_10_256_16_1e-4_0.5_2_1e-5.pt', device)
-    model = MCALoc(node_input_dim, hidden_dim, layer, dropout)
+    model = MCALoc(input_dim, hidden_dim, layer, dropout)
     model.eval()
     model = model.to(device)
     model.load_state_dict(state_dict, strict=False)
