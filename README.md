@@ -13,17 +13,19 @@ The encoder combines dilated depthwise separable convolutions, residual connecti
 ```text
 .
 ├── README.md
-├── requirement.txt              # Pinned pip dependencies
+├── requirement.txt                    # Pinned pip dependencies
 └── MCA_Loc/
-    ├── environment.yml          # Conda environment
+    ├── environment.yml                # Conda environment
     ├── Data/
-    │   └── test.csv             # Test dataset
+    │   ├── test_ipr.csv               # Dataset S5
+    │   └── test.csv                   # Dataset S3
     ├── model/
-    │   └── LA_CrossCL_fold*.pt  # Five model checkpoints
+    │   ├── MCA_Loc_iprdata_fold*.pt   # Five model checkpoints on Dataset S4
+    │   └── MCA_Loc_fold*.pt           # Five model checkpoints on Dataset S2
     └── script/
-        ├── Encoder.py          # Encoder modules
-        ├── MCA_model.py        # Model and dataset definitions
-        └── MCA_test.py         # Evaluation script
+        ├── Encoder.py                 # Encoder modules
+        ├── MCA_model.py               # Model and dataset definitions
+        └── MCA_inference.py           # Inference script
 ```
 
 ## Installation
@@ -67,7 +69,7 @@ From the repository root, run:
 
 ```bash
 cd MCA_Loc/script
-python MCA_test.py
+python MCA_inference.py
 ```
 
 The script loads the five checkpoints from `MCA_Loc/model/`. Training and feature extraction scripts are not included in the current release.
