@@ -17,7 +17,7 @@ The encoder combines dilated depthwise separable convolutions, residual connecti
 └── MCA_Loc/
     ├── environment.yml                # Conda environment
     ├── Data/
-    │   ├── test_iprdata.csv           # Dataset S5
+    │   ├── test_ipr.csv               # Dataset S5
     │   └── test.csv                   # Dataset S3
     ├── model/
     │   ├── MCA_Loc_iprdata_fold*.pt   # Five model checkpoints on Dataset S4
