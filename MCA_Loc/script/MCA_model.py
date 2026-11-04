@@ -49,7 +49,7 @@ class MCALoc_Dataset(data.Dataset):
     def __init__(self, ID_list, labels, outpath):
         super(MCALoc_Dataset, self).__init__()
         self.IDs = ID_list
-        self.labels = {ID: labels[ID] for ID in self.IDs}  # 过滤确保只包含ID_list对应的标签
+        self.labels = {ID: labels[ID] for ID in self.IDs}  
         self.prottrans_path = outpath + "ProtTrans/{}.tensor"
 
 
@@ -58,7 +58,7 @@ class MCALoc_Dataset(data.Dataset):
 
     def __getitem__(self, idx):
         node_feat = self._featurize(idx)
-        Label = self.labels[self.IDs[idx]]  # 获取当前索引的标签
+        Label = self.labels[self.IDs[idx]]  
         return node_feat, Label
 
     def _featurize(self, idx):
