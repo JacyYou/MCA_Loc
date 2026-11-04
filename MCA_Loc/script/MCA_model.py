@@ -12,7 +12,7 @@ script_path = os.path.split(os.path.realpath(__file__))[0] + "/"
 
 ##############  Hyperparameter  ##############
 MCALoc_config = {
-    'node_input_dim': 1024,
+    'input_dim': 1024,
     'hidden_dim': 256,
     'layer': 2,
     'dropout': 0.2
@@ -20,12 +20,12 @@ MCALoc_config = {
 
 ##############  Model  ##############
 class MCALoc(nn.Module):
-    def __init__(self, node_input_dim, hidden_dim, num_layers, dropout, augment_eps=0.02):
+    def __init__(self, input_dim, hidden_dim, num_layers, dropout, augment_eps=0.02):
         super(MCALoc, self).__init__()
         self.augment_eps = augment_eps
         self.task_list = ["Cell Junctions", "Cytoskeleton", "Cytosol", "Endoplasmic reticulum", "Golgi apparatus", "Mitochondrion",
                         "Nuclear speckles", "Nuclear membrane", "Nucleolus", "Nucleoplasm", "Plasma membrane", "Vesicles"]
-        self.Encoder = ImprovedLightAttention(emb_dim=node_input_dim, final_dim=hidden_dim)
+        self.Encoder = ImprovedLightAttention(emb_dim=input_dim, final_dim=hidden_dim)
         self.FC_1 = self.clf_head = nn.Linear(256, len(self.task_list))
 
         # Initialization
