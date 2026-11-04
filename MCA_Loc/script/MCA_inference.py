@@ -2,7 +2,7 @@
     Author：Jacy.Y
     Purpose：Pass
     Created: 2025/3/24
-    File name: MCALoc_test.py
+    File name: MCALoc_inference.py
 """
 
 # Dependencies
@@ -12,8 +12,8 @@ from sklearn.metrics import roc_auc_score, average_precision_score, f1_score, ja
 from torch.utils.data import DataLoader
 import re
 import os
-# Hyper Parameters
 
+# Hyper Parameters
 seed = 42
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
@@ -26,14 +26,14 @@ hidden_dim = MCALoc_config['hidden_dim']
 layer = MCALoc_config['layer']
 dropout = MCALoc_config['dropout']
 batch_size = 16
-gpu = "0"  # 使用GPU 1
+gpu = "0"  
 device = torch.device(f"cuda:{gpu}" if torch.cuda.is_available() else "cpu")
 threshold = 0.5
 
 ############ path ############
 script_path = 'path_to/script/'
-test_path = '../Data/test.csv'    # 测试数据路径
-outpath = '/media/sdc1/24jxyou/DSALoc/HPA_v24/'  # 处理数据存储路径
+test_path = '../Data/test.csv'    
+outpath = '/media/sdc1/24jxyou/DSALoc/HPA_v24/'  # path to feature
 ProtTrans_path = "path_to/prot_t5_xl_uniref50/"
 ###############################################
 
@@ -69,11 +69,10 @@ def clean_sequence(seq):
     return re.sub(r"[^ACDEFGHIKLMNPQRSTVWY]", "", seq)
 
 
-val_data = pd.read_csv(test_path)             # 直接读到的原始测试集数据
+val_data = pd.read_csv(test_path)             
 
 # Model Evaluation
 
-# 测试集标签序列和ID分离
 val_ID_list = val_data["ID"].tolist()
 val_seq = val_data["Sequence"].tolist()
 label_columns = val_data.columns[-12:]
@@ -92,12 +91,11 @@ for fold in range(5):
     model.load_state_dict(state_dict, strict=False)
     fold_models.append(model)
 
-# 用于存储每个fold的预测结果
-fold_all_results = []  # 每个元素是 (num_samples, num_classes) 的概率
-fold_all_preds = []  # 每个元素是 (num_samples, num_classes) 的二值预测
+
+fold_all_results = []  
+fold_all_preds = []  
 fold_all_labels = []
 with torch.no_grad():
-    # 先收集所有数据（或分批处理，此处采用逐模型预测）
     for model in fold_models:
         fold_results = []
         fold_preds = []
@@ -110,14 +108,12 @@ with torch.no_grad():
             prob = torch.sigmoid(output)  # 转换为概率
             pred = torch.ge(prob, threshold).int()
             no_pred_mask = (pred.sum(dim=1) == 0)
-            # 3. 如果存在全 0 行，执行 Top-1 补偿
             if no_pred_mask.any():
                 max_indices = prob[no_pred_mask].argmax(dim=1)
                 pred[no_pred_mask] = pred[no_pred_mask].scatter_(1, max_indices.unsqueeze(1), 1)
             fold_labels.append(labels.cpu())
             fold_results.append(prob.cpu())
             fold_preds.append(pred.cpu())
-        # 合并当前fold所有batch的结果
         fold_results = torch.cat(fold_results, dim=0).numpy()
         fold_preds = torch.cat(fold_preds, dim=0).numpy()
         fold_labels = torch.cat(fold_labels, dim=0).numpy()
@@ -125,14 +121,12 @@ with torch.no_grad():
         fold_all_preds.append(fold_preds)
         fold_all_labels.append(fold_labels)
 
-# 真实标签只需获取一次（所有fold相同）
 all_labels_list = []
 with torch.no_grad():
     for h_V, labels, mask in val_loader:
         all_labels_list.append(labels.cpu())
 all_labels = torch.cat(all_labels_list, dim=0).numpy()
 
-# 为每个fold计算指标
 metrics = {
     'Macro_AUC': [], 'Macro_AUPR': [], 'Macro_F1': [],
     'Micro_AUC': [], 'Micro_AUPR': [], 'Micro_F1': [],
@@ -168,12 +162,11 @@ for i in range(5):
     all_labels = fold_all_labels[i]
     macro_AUPR = 0
     for i in range(all_labels.shape[1]):
-        # 计算当前标签的 Precision 和 Recall
         precision, recall, _ = precision_recall_curve(all_labels[:, i], res[:, i])
         sorted_indices = np.argsort(recall)
         recall = recall[sorted_indices]
         precision = precision[sorted_indices]
-        macro_AUPR += np.trapz(precision, recall)  # np.trapz 使用梯形规则进行数值积分
+        macro_AUPR += np.trapz(precision, recall)  
     macro_AUPR /= all_labels.shape[1]
 
     all_labels = all_labels.flatten()
@@ -182,13 +175,13 @@ for i in range(5):
     sorted_indices = np.argsort(recall)
     recall = recall[sorted_indices]
     precision = precision[sorted_indices]
-    # 使用梯形规则计算Micro-AUPR
+
     micro_AUPR = np.trapz(precision, recall)
 
     metrics['Macro_AUPR'].append(macro_AUPR)
     metrics['Micro_AUPR'].append(micro_AUPR)
 
-# 输出每个指标的均值和标准差
+
 for name, values in metrics.items():
     mean_val = np.mean(values)
     std_val = np.std(values)
