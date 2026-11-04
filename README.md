@@ -63,7 +63,7 @@ CUDA-specific PyTorch/PyG wheels and packages such as `dllogger` may require add
 
 ## Usage
 
-Precomputed ProtTrans features are required and are not included in this repository. Update `test_path` and `outpath` in `MCA_Loc/script/MCA_test.py` to match your local paths. The `outpath` value must point to the parent directory of `ProtTrans/` and end with `/`.
+Precomputed ProtTrans features are required and are not included in this repository. Update `test_path` and `outpath` in `MCA_Loc/script/MCA_inference.py` to match your local paths. `outpath` is the  path to feature extracted by ProtT5.
 
 From the repository root, run:
 
